@@ -1,0 +1,74 @@
+name: CI Multi-stage
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  fast-tests:
+    name: Fast unit & mock tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.9'
+      - name: Install dependencies
+        run: |
+          python -m venv .venv
+          . .venv/bin/activate
+          pip install --upgrade pip
+          pip install -r requirements.txt
+      - name: Start mock API
+        run: |
+          . .venv/bin/activate
+          nohup .venv/bin/python -m scripts.mock_api &>/tmp/mock_api.log &
+          sleep 1
+      - name: Run pytest (fast)
+        run: |
+          . .venv/bin/activate
+          pytest -q --maxfail=1 -m "not manual" --junitxml=reports/pytest_fast.xml || true
+      - name: Upload artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: fast-test-artifacts
+          path: |
+            reports/pytest_fast.xml
+            reports/*.json
+            /tmp/mock_api.log
+
+  staging-integration:
+    name: Staging integration
+    runs-on: ubuntu-latest
+    needs: fast-tests
+    if: ${{ secrets.STAGING_BASE_URL != '' }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.9'
+      - name: Install dependencies
+        run: |
+          python -m venv .venv
+          . .venv/bin/activate
+          pip install --upgrade pip
+          pip install -r requirements.txt
+      - name: Run integration tests against staging
+        env:
+          BASE_URL: ${{ secrets.STAGING_BASE_URL }}
+          AUTH_USERNAME: ${{ secrets.STAGING_USERNAME }}
+          AUTH_PASSWORD: ${{ secrets.STAGING_PASSWORD }}
+        run: |
+          . .venv/bin/activate
+          pytest -q -m integration --junitxml=reports/pytest_staging.xml || true
+      - name: Upload staging artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: staging-test-artifacts
+          path: reports/pytest_staging.xml

@@ -5,6 +5,10 @@ from utils.schema import assert_json_schema
 from utils.schema_loader import load_schema
 
 
+import pytest
+
+
+@pytest.mark.integration
 def test_hello(api_client):
     resp = api_client.get("/api/hello")
     # server may or may not expose this in some environments; accept 200 or 404
@@ -13,6 +17,7 @@ def test_hello(api_client):
         assert "CMS Portal API" in resp.text or len(resp.text) > 0
 
 
+@pytest.mark.integration
 def test_debug_ip(api_client):
     resp = api_client.get("/api/debug/ip")
     assert resp.status_code == 200
@@ -23,6 +28,7 @@ def test_debug_ip(api_client):
         pytest.skip("debug ip did not return JSON")
 
 
+@pytest.mark.integration
 def test_login_and_auth_api_client(auth_api_client, config):
     # auth_api_client fixture attempts login at session start; ensure client can access an auth-only endpoint
     client = auth_api_client
@@ -32,6 +38,7 @@ def test_login_and_auth_api_client(auth_api_client, config):
     assert resp.status_code in (200, 401, 403, 404)
 
 
+@pytest.mark.integration
 def test_list_users_and_schema(auth_api_client):
     client = auth_api_client
     resp = client.get("/api/users")
@@ -46,6 +53,7 @@ def test_list_users_and_schema(auth_api_client):
             assert_json_schema(body.get("data")[0], schema)
 
 
+@pytest.mark.integration
 def test_get_user_by_id_non_destructive(auth_api_client):
     client = auth_api_client
     # attempt to list users and then fetch one by id if present
@@ -67,6 +75,7 @@ def test_get_user_by_id_non_destructive(auth_api_client):
             assert_json_schema(resp2.json(), schema)
 
 
+@pytest.mark.integration
 def test_get_user_permissions_non_destructive(auth_api_client):
     client = auth_api_client
     # get a user id first
@@ -82,6 +91,7 @@ def test_get_user_permissions_non_destructive(auth_api_client):
     assert resp2.status_code in (200, 404, 401, 403)
 
 
+@pytest.mark.integration
 def test_roles_list_and_schema(auth_api_client):
     client = auth_api_client
     resp = client.get("/api/roles")
@@ -96,6 +106,7 @@ def test_roles_list_and_schema(auth_api_client):
             assert_json_schema(body.get("data")[0], schema)
 
 
+@pytest.mark.integration
 def test_get_role_by_id_non_destructive(auth_api_client):
     client = auth_api_client
     resp = client.get("/api/roles")
@@ -109,6 +120,7 @@ def test_get_role_by_id_non_destructive(auth_api_client):
     assert resp2.status_code in (200, 404)
 
 
+@pytest.mark.integration
 def test_role_permissions_list_non_destructive(auth_api_client):
     client = auth_api_client
     # list permissions for a likely role id 1; accept various codes
@@ -116,6 +128,7 @@ def test_role_permissions_list_non_destructive(auth_api_client):
     assert resp.status_code in (200, 404, 401, 403)
 
 
+@pytest.mark.integration
 def test_invalid_manage_role_action(api_client):
     # non-auth attempt to manage role with invalid action should be rejected or unauthorized
     payload = {"action": "INVALID", "roleName": "test-x"}

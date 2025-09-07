@@ -1,7 +1,9 @@
-base_url: "https://localhost:8443"
+# Default test configuration. Do not store production credentials here.
+# For CI or local overrides, set environment variables as described in README.md
+base_url: "http://localhost:8000"
 auth:
-  username: "phanith.chhim"
-  password: "Nith@2010"
+  username: ""
+  password: ""
 defaults:
   timeout: 10
 # Set to false for local dev with self-signed certs

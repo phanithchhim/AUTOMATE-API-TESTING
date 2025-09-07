@@ -1,11 +1,40 @@
 import requests
 from requests.auth import HTTPBasicAuth
+from requests.adapters import HTTPAdapter
+from urllib3.util import Retry
+
+
+def get_session_with_retries(
+    retries: int = 3,
+    backoff_factor: float = 0.3,
+    status_forcelist=(500, 502, 504),
+    allowed_methods=frozenset(["GET", "POST", "PUT", "DELETE", "HEAD", "OPTIONS"]),
+) -> requests.Session:
+    """
+    Return a requests.Session configured with retry/backoff semantics.
+    Use this session for more resilient HTTP calls from tests.
+    """
+    session = requests.Session()
+    retry = Retry(
+        total=retries,
+        read=retries,
+        connect=retries,
+        backoff_factor=backoff_factor,
+        status_forcelist=status_forcelist,
+        allowed_methods=allowed_methods,
+        raise_on_status=False,
+    )
+    adapter = HTTPAdapter(max_retries=retry)
+    session.mount("http://", adapter)
+    session.mount("https://", adapter)
+    return session
 
 
 class APIClient:
-    def __init__(self, base_url: str, timeout: int = 10, verify: bool = True):
+    def __init__(self, base_url: str, timeout: int = 10, verify: bool = True, retries: int = 3):
         self.base_url = base_url.rstrip("/") if base_url else ""
-        self.session = requests.Session()
+        # session with retry/backoff
+        self.session = get_session_with_retries(retries=retries)
         self.timeout = timeout
         # controls TLS cert verification (useful for local self-signed certs)
         self.session.verify = verify
@@ -28,7 +57,7 @@ class APIClient:
             self.session.cookies.set(cookie.name, cookie.value, path=cookie.path or "/")
 
     def request(self, method: str, path: str, **kwargs) -> requests.Response:
-        url = f"{self.base_url}/{path.lstrip('/')}"
+        url = f"{self.base_url}/{path.lstrip('/') }"
         if "timeout" not in kwargs:
             kwargs["timeout"] = self.timeout
         return self.session.request(method, url, **kwargs)

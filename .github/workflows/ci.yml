@@ -1,0 +1,104 @@
+name: CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.9'
+      - name: Install dependencies
+        run: |
+          python -m venv .venv
+          . .venv/bin/activate
+          pip install --upgrade pip
+          pip install -r requirements.txt
+      - name: Start mock API
+        run: |
+          . .venv/bin/activate
+          nohup python -m scripts.mock_api &>/tmp/mock_api.log &
+          sleep 1
+      - name: Run pytest (fast/mock tests)
+        run: |
+          . .venv/bin/activate
+          # default: run non-manual tests; fail the job if tests fail
+          pytest --maxfail=1 -q --junitxml=reports/pytest_ci.xml
+      - name: Run strict schema checker (contract enforcement)
+        run: |
+          . .venv/bin/activate
+          # strict will exit non-zero if schema mismatches found
+          .venv/bin/python scripts/check_endpoints.py --all --strict -u "${{ secrets.CI_USERNAME }}" -p "${{ secrets.CI_PASSWORD }}"
+      - name: Upload mock server log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pytest-log
+          path: /tmp/mock_api.log
+      - name: Upload test artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ci-test-artifacts
+          path: |
+            reports/*.xml
+            reports/*.json
+
+  staging-integration:
+    needs: test
+    runs-on: ubuntu-latest
+    if: ${{ secrets.STAGING_BASE_URL && secrets.STAGING_USERNAME && secrets.STAGING_PASSWORD }}
+    environment: staging
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.9'
+      - name: Install dependencies
+        run: |
+          python -m venv .venv
+          . .venv/bin/activate
+          pip install --upgrade pip
+          pip install -r requirements.txt
+      - name: Seed staging data
+        env:
+          STAGING_BASE_URL: ${{ secrets.STAGING_BASE_URL }}
+          STAGING_USERNAME: ${{ secrets.STAGING_USERNAME }}
+          STAGING_PASSWORD: ${{ secrets.STAGING_PASSWORD }}
+        run: |
+          . .venv/bin/activate
+          python scripts/staging_seed.py
+      - name: Run integration tests against staging
+        env:
+          BASE_URL: ${{ secrets.STAGING_BASE_URL }}
+          AUTH_USERNAME: ${{ secrets.STAGING_USERNAME }}
+          AUTH_PASSWORD: ${{ secrets.STAGING_PASSWORD }}
+        run: |
+          . .venv/bin/activate
+          pytest -q -m integration --junitxml=reports/pytest_staging_integration.xml
+      - name: Run strict checker against staging (schema enforcement)
+        env:
+          BASE_URL: ${{ secrets.STAGING_BASE_URL }}
+          AUTH_USERNAME: ${{ secrets.STAGING_USERNAME }}
+          AUTH_PASSWORD: ${{ secrets.STAGING_PASSWORD }}
+        run: |
+          . .venv/bin/activate
+          .venv/bin/python scripts/check_endpoints.py --all --strict -u "${{ secrets.STAGING_USERNAME }}" -p "${{ secrets.STAGING_PASSWORD }}"
+  # teardown step removed: staging_teardown.py intentionally deleted; manual cleanup or keep seed idempotent
+      - name: Upload staging artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: staging-test-artifacts
+          path: |
+            reports/*.xml
+            reports/*.json

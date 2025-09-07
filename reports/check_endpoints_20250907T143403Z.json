@@ -1,0 +1,150 @@
+{
+  "base_url": "http://127.0.0.1:8000",
+  "results": [
+    {
+      "method": "GET",
+      "path": "/api/hello",
+      "url": "http://127.0.0.1:8000/api/hello",
+      "ok": true,
+      "status_code": 200,
+      "body_text": "CMS Portal API",
+      "schema": {
+        "fallback_matches": [],
+        "valid": false,
+        "error": "no_matching_schema"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/debug/ip",
+      "url": "http://127.0.0.1:8000/api/debug/ip",
+      "ok": true,
+      "status_code": 200,
+      "body": {
+        "remoteAddr": "127.0.0.1",
+        "verified_remote_ip": true,
+        "xff": null
+      },
+      "schema": {
+        "fallback_match": "LoginResponse.json",
+        "valid": true
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/users",
+      "url": "http://127.0.0.1:8000/api/users",
+      "ok": true,
+      "status_code": 200,
+      "body": {
+        "data": [
+          {
+            "id": "phanith.chhim",
+            "userId": "phanith.chhim",
+            "username": "Phanith"
+          },
+          {
+            "id": "roby.va",
+            "userId": "roby.va",
+            "username": "Roby"
+          }
+        ],
+        "success": true
+      },
+      "schema": {
+        "name": "GetUsersRequest.json",
+        "available_tools": false
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/users/phanith.chhim",
+      "url": "http://127.0.0.1:8000/api/users/phanith.chhim",
+      "ok": true,
+      "status_code": 200,
+      "body": {
+        "id": "phanith.chhim",
+        "userId": "phanith.chhim",
+        "username": "phanith.chhim"
+      },
+      "schema": {
+        "name": "GetUserDto.json",
+        "available_tools": false
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/users/phanith.chhim/permissions",
+      "url": "http://127.0.0.1:8000/api/users/phanith.chhim/permissions",
+      "ok": true,
+      "status_code": 200,
+      "body": {
+        "data": [
+          {
+            "name": "read",
+            "permissionId": 1
+          }
+        ],
+        "success": true
+      },
+      "schema": {
+        "name": "UserPermissionDto.json",
+        "available_tools": false
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/roles",
+      "url": "http://127.0.0.1:8000/api/roles",
+      "ok": true,
+      "status_code": 200,
+      "body": {
+        "data": [
+          {
+            "id": 1,
+            "roleId": 1,
+            "roleName": "Admin"
+          }
+        ],
+        "success": true
+      },
+      "schema": {
+        "name": "role_schema.json",
+        "available_tools": false
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/roles/permissions/1",
+      "url": "http://127.0.0.1:8000/api/roles/permissions/1",
+      "ok": true,
+      "status_code": 200,
+      "body": {
+        "data": []
+      },
+      "schema": {
+        "fallback_match": "LoginResponse.json",
+        "valid": true
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/login",
+      "url": "http://127.0.0.1:8000/api/login",
+      "ok": true,
+      "status_code": 200,
+      "body": {
+        "success": true,
+        "token": "test-token",
+        "userId": "phanith.chhim"
+      },
+      "schema": {
+        "valid": true
+      }
+    }
+  ],
+  "summary": {
+    "success": 7,
+    "failure": 0
+  }
+}

@@ -12,25 +12,64 @@ def config():
 
 
 @pytest.fixture(scope="session")
-def api_client(config):
-    client = APIClient(base_url=config.get("base_url"), timeout=config.get("defaults", {}).get("timeout", 10), verify=config.get("verify_ssl", True))
+def merged_config(config):
+    """Return configuration overlayed with environment variables when present.
+
+    Environment variables supported:
+      - BASE_URL
+      - AUTH_USERNAME
+      - AUTH_PASSWORD
+      - VERIFY_SSL (true/false)
+      - DEFAULT_TIMEOUT
+    """
+    cfg = dict(config or {})
+    # override with env vars when provided
+    base = os.environ.get("BASE_URL")
+    if base:
+        cfg["base_url"] = base
+
+    auth_user = os.environ.get("AUTH_USERNAME")
+    auth_pass = os.environ.get("AUTH_PASSWORD")
+    if auth_user or auth_pass:
+        cfg.setdefault("auth", {})
+        if auth_user:
+            cfg["auth"]["username"] = auth_user
+        if auth_pass:
+            cfg["auth"]["password"] = auth_pass
+
+    verify = os.environ.get("VERIFY_SSL")
+    if verify is not None:
+        cfg["verify_ssl"] = verify.lower() not in ("0", "false", "no")
+
+    timeout = os.environ.get("DEFAULT_TIMEOUT")
+    if timeout:
+        cfg.setdefault("defaults", {})["timeout"] = int(timeout)
+
+    return cfg
+
+
+@pytest.fixture(scope="session")
+def api_client(merged_config):
+    """API client using merged configuration (config.yaml overlaid with env vars)."""
+    cfg = merged_config
+    client = APIClient(base_url=cfg.get("base_url"), timeout=cfg.get("defaults", {}).get("timeout", 10), verify=cfg.get("verify_ssl", True))
     return client
 
 
 @pytest.fixture(scope="session")
-def auth_api_client(config):
+def auth_api_client(merged_config):
     """Return an APIClient pre-authenticated via /api/login (uses config.auth)
 
     If login is successful and the response contains cookies (JSESSIONID), those cookies
     are copied into the session. If the response contains a bearer token in the JSON
     (e.g., token field), it is added to Authorization header.
     """
-    client = APIClient(base_url=config.get("base_url"), timeout=config.get("defaults", {}).get("timeout", 10), verify=config.get("verify_ssl", True))
-    auth = config.get("auth", {})
+    client = APIClient(base_url=merged_config.get("base_url"), timeout=merged_config.get("defaults", {}).get("timeout", 10), verify=merged_config.get("verify_ssl", True))
+    auth = merged_config.get("auth", {})
     username = auth.get("username")
     password = auth.get("password")
     if not username:
-        pytest.skip("No auth username configured in config.yaml")
+        pytest.skip("No auth username configured in config.yaml or AUTH_USERNAME env var")
 
     # Attempt login
     try:
