@@ -1,0 +1,11 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "AssignUserRoleRequest",
+  "type": "object",
+  "properties": {
+    "roleId": {"type": ["integer", "null"]},
+    "action": {"type": ["string", "null"]},
+    "createBy": {"type": ["string", "null"]}
+  },
+  "required": ["action"]
+}

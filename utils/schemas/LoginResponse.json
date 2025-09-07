@@ -1,0 +1,23 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "LoginResponse",
+  "type": "object",
+  "properties": {
+    "success": {"type": "boolean"},
+    "message": {"type": ["string", "null"]},
+    "roles": {"type": ["string", "null"]},
+    "isLdap": {"type": ["string", "null"]},
+    "status": {"type": ["string", "null"]},
+    "sessionId": {"type": ["string", "null"]},
+    "userId": {"type": ["string", "null"]},
+    "isActive": {"type": ["string", "null"]},
+    "isLocked": {"type": ["string", "null"]},
+    "lastLoginDatetime": {"type": ["string", "null"]},
+    "ldapDistinguishedName": {"type": ["string", "null"]},
+    "ldapCommonName": {"type": ["string", "null"]},
+    "ldapDisplayName": {"type": ["string", "null"]},
+    "ldapUserPrincipalName": {"type": ["string", "null"]},
+    "ldapSamAccountName": {"type": ["string", "null"]},
+    "ldapMail": {"type": ["string", "null"]}
+  }
+}

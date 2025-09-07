@@ -1,0 +1,8 @@
+base_url: "https://localhost:8443"
+auth:
+  username: "phanith.chhim"
+  password: "Nith@2010"
+defaults:
+  timeout: 10
+# Set to false for local dev with self-signed certs
+verify_ssl: false

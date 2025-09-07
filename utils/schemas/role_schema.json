@@ -1,0 +1,13 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "RoleDto",
+  "type": "object",
+  "properties": {
+    "roleId": {"type": ["integer", "null"]},
+    "roleName": {"type": ["string", "null"]},
+    "isActive": {"type": ["string", "null"]},
+    "createBy": {"type": ["string", "null"]},
+    "createdDatetime": {"type": ["string", "null"]}
+  },
+  "required": ["roleName"]
+}

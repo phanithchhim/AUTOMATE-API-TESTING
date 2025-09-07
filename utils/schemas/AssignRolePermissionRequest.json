@@ -1,0 +1,14 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "AssignRolePermissionRequest",
+  "type": "object",
+  "properties": {
+    "roleId": {"type": ["integer", "null"]},
+    "menuId": {"type": ["integer", "null"]},
+    "permissionId": {"type": ["integer", "null"]},
+    "fVisible": {"type": ["integer", "null"]},
+    "action": {"type": ["string", "null"]},
+    "createBy": {"type": ["string", "null"]}
+  },
+  "required": ["roleId", "menuId", "permissionId", "action"]
+}

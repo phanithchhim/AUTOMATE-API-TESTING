@@ -1,0 +1,15 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "UserPermissionDto",
+  "type": "object",
+  "properties": {
+    "menuId": {"type": ["integer", "null"]},
+    "menuName": {"type": ["string", "null"]},
+    "menuLink": {"type": ["string", "null"]},
+    "parentId": {"type": ["integer", "null"]},
+    "fLevel": {"type": ["integer", "null"]},
+    "permissionId": {"type": ["integer", "null"]},
+    "permissionName": {"type": ["string", "null"]},
+    "fVisible": {"type": ["integer", "null"]}
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "UpdateUserRequest",
+  "type": "object",
+  "properties": {
+    "username": {"type": ["string", "null"]},
+    "isActive": {"type": ["string", "null"]},
+    "branchId": {"type": ["integer", "null"]},
+    "authorizeTypeId": {"type": ["integer", "null"]},
+    "remark": {"type": ["string", "null"]},
+    "lastModifyBy": {"type": ["string", "null"]}
+  }
+}
